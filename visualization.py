@@ -12,21 +12,22 @@ port = '5432'
 # Query 2a
 query_1 = '''
 SELECT name, COUNT(movie_id)
-FROM genres left join movie_has_genre using (genre_id)
+FROM genres LEFT JOIN movie_has_genre USING (genre_id)
 GROUP BY genre_id;
 '''
 
 # Query 2b
 query_2 = '''
 SELECT series_title, gross
-FROM movies;
+FROM movies
+WHERE NOT gross IS NULL;
 '''
 
 # Query 2c
 query_3 = '''
 SELECT name, AVG(value)
-FROM genres right join movie_has_genre using (genre_id)
-			right join imdb_ratings using (movie_id)
+FROM genres RIGHT JOIN movie_has_genre USING (genre_id)
+			RIGHT JOIN imdb_ratings USING (movie_id)
 WHERE update_date = '2021-02-01'
 GROUP BY name;
 '''
@@ -48,8 +49,7 @@ with conn:
 
     bars1 = bar1_ax.bar(range(len(genres)), movies_num)
     bar1_ax.bar_label(bars1, movies_num)
-    bar1_ax.set_xticks(range(len(genres)))
-    bar1_ax.set_xticklabels(genres)
+    bar1_ax.set_xticks(ticks=range(len(genres)), labels=genres, rotation=90)
     bar1_ax.set_xlabel('Назва жанру')
     bar1_ax.set_ylabel('Кількість фільмів')
     bar1_ax.set_title('2a) Жанри та кількості фільмів у відповідних жанрах')
@@ -66,12 +66,11 @@ with conn:
     cur.execute(query_3)
 
     genres, avg_values = list(zip(*cur.fetchall()))
-    avg_values = list(map(float, avg_values))
+    avg_values = list(map(lambda x: round(float(x), 3), avg_values))
 
     bars2 = bar2_ax.bar(range(len(genres)), avg_values)
     bar2_ax.bar_label(bars2, avg_values)
-    bar2_ax.set_xticks(range(len(genres)))
-    bar2_ax.set_xticklabels(genres)
+    bar2_ax.set_xticks(ticks=range(len(genres)), labels=genres, rotation=90)
     locator_base = 0.05
     bar2_ax.set_ylim(min(avg_values) - locator_base, max(avg_values) + locator_base)
     bar2_ax.yaxis.set_major_locator(MultipleLocator(locator_base, min(avg_values)))
